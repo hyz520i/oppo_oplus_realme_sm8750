@@ -373,6 +373,64 @@ jobs:
           sed -i 's/check_defconfig//' ./common/build.config.gki
           echo "CONFIG_HEADERS_INSTALL=n" >> ./common/arch/arm64/configs/gki_defconfig
           
+          # =====================================================
+          # ===== 终极全能内核配置（覆盖全部七大维度） =====
+          # =====================================================
+          
+          # ---------- 1. 前台响应（极致触控跟手度） ----------
+          echo "CONFIG_HZ=1000" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_HZ_1000=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_RCU_BOOST=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_RCU_EXPERT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_RCU_FAST_NO_HZ=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 2. 后台保活（墓碑机制 + 内存压力感知） ----------
+          echo "CONFIG_CGROUP_FREEZER=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_PSI=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "# CONFIG_PSI_DEFAULT_DISABLED is not set" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_LRU_GEN_ENABLED=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 3. 省电与待机（深度休眠与功耗优化） ----------
+          echo "CONFIG_SCHED_CLUSTER=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_ENERGY_MODEL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 4. 网络吞吐（TCP 栈深度优化） ----------
+          echo "CONFIG_TCP_MEM_OPTIMIZATION=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TCP_FASTOPEN=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TCP_FASTOPEN_CONNECT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 5. 游戏稳帧（调度与 IO 硬隔离） ----------
+          echo "CONFIG_CFS_BANDWIDTH=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SCHED_CORE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BLK_CGROUP_IOPRIO=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_CFQ_GROUP_IOSCHED=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 6. 内存管理（泄漏防护 + 压缩加速） ----------
+          echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_ZRAM_MEMORY_TRACKING=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DAMON=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DAMON_VADDR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DAMON_PADDR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DAMON_RECLAIM=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SLAB_FREELIST_RANDOM=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SLAB_FREELIST_HARDENED=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 7. 网络代理/VPN 底层支持 ----------
+          echo "CONFIG_TUN=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_WIREGUARD=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_OVPN=m" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NETFILTER_TPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NETFILTER_XT_MATCH_SOCKET=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_ADVANCED_ROUTER=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_MULTIPLE_TABLES=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 额外安全 + 文件系统加速 ----------
+          echo "CONFIG_BPF_LSM=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEFAULT_MMAP_MIN_ADDR=32768" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SLUB_CPU_PARTIAL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_ARM64_USE_LSE_ATOMICS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_FSCACHE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
       - name: 启用网络功能增强优化配置
         if: inputs.better_net
         run: |
@@ -596,8 +654,9 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
+          # ===== 编译器优化：-O3 + 自动向量化（安全） =====
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+="-O3 -fno-strict-aliasing -mllvm -polly" KCFLAGS+=-Wno-error gki_defconfig &&
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+="-O3 -fno-strict-aliasing -mllvm -polly" KCFLAGS+=-Wno-error Image
           
           echo "--- 编译后环境时间: $(LD_PRELOAD=$PRELOAD_LIBS date) ---"
           echo "--- 编译后环境文件时间戳: ---"
