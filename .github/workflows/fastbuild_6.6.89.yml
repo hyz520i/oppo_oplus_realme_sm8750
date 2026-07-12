@@ -431,6 +431,51 @@ jobs:
           echo "CONFIG_ARM64_USE_LSE_ATOMICS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_FSCACHE=y" >> ./common/arch/arm64/configs/gki_defconfig
           
+          # =====================================================
+          # ===== 最终补缺：ZRAM / 内存 / 网络 / 调度深度优化 =====
+          # =====================================================
+          
+          # ---------- ZRAM 深度优化 ----------
+          echo "CONFIG_ZRAM_DEF_COMP_LZ4=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "# CONFIG_ZRAM_DEF_COMP_ZSTD is not set" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_ZRAM_MULTI_COMP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 内存规整 ----------
+          echo "CONFIG_COMPACTION=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_COMPACT_UNEVICTABLE_DEFAULT=1" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_MEMORY_FAILURE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 网络低延迟 ----------
+          echo "CONFIG_NET_RX_BUSY_POLL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_SCH_FQ_CODEL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 调度增强 ----------
+          echo "CONFIG_SCHED_AUTOGROUP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_FAIR_GROUP_SCHED=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # =====================================================
+          # ===== 最终补全：全部算法 & 调度器（完整全家桶） =====
+          # =====================================================
+          
+          # ---------- I/O 调度器：BFQ ----------
+          echo "CONFIG_IOSCHED_BFQ=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_BFQ_GROUP_IOSCHED=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- TCP 拥塞控制算法全集 ----------
+          echo "CONFIG_TCP_CONG_DCTCP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TCP_CONG_YEAH=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TCP_CONG_SCALABLE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TCP_CONG_LP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 网络 QoS ----------
+          echo "CONFIG_NET_SCH_INGRESS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_CLS_ACT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_SCH_HFSC=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
+          # ---------- 透明大页 ----------
+          echo "CONFIG_TRANSPARENT_HUGEPAGE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
       - name: 启用网络功能增强优化配置
         if: inputs.better_net
         run: |
